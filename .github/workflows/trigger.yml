@@ -1,0 +1,7 @@
+name: Force Trigger
+on: push
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Triggering build..."
