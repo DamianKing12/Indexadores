@@ -2,6 +2,8 @@ package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import java.net.URLEncoder
+import android.util.Log
 
 class SeriesKaoProvider : MainAPI() {
     override var mainUrl = "https://serieskao.top"
@@ -10,14 +12,14 @@ class SeriesKaoProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
     override val hasMainPage = false
     
-    // Eliminado: useTrackerLoading, rateLimit (no existen en esta versión)
-
+    // Eliminados: useTrackerLoading, rateLimit (no existen en esta versión)
+    
     private val headers = mapOf(
         "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     )
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val url = "$mainUrl/search?s=${query.urlEncode()}"
+        val url = "$mainUrl/search?s=${URLEncoder.encode(query, "UTF-8")}"
         val doc = app.get(url, headers = headers).document
 
         return doc.select("a").filter { element ->
@@ -78,7 +80,11 @@ class SeriesKaoProvider : MainAPI() {
                     val epTitle = episodeLink.selectFirst(".episode-title")?.text()?.trim()
                     
                     if (href.isNotBlank() && epNum > 0) {
-                        Episode(href, epTitle, seasonId, epNum)
+                        newEpisode(href) {
+                            this.name = epTitle
+                            this.season = seasonId
+                            this.episode = epNum
+                        }
                     } else null
                 } ?: emptyList()
             }.flatten()
@@ -128,14 +134,11 @@ class SeriesKaoProvider : MainAPI() {
             servers.forEach { server ->
                 val cleanUrl = server.url.replace("\\/", "/")
                 callback(
-                    ExtractorLink(
-                        source = server.title,
-                        name = server.title,
-                        url = cleanUrl,
-                        referer = mainUrl,
-                        quality = getQuality(server.title),
-                        isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
-                    )
+                    newExtractorLink(server.title, server.title, cleanUrl) {
+                        this.referer = mainUrl
+                        this.quality = getQuality(server.title)
+                        this.isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
+                    }
                 )
             }
             servers.isNotEmpty()
