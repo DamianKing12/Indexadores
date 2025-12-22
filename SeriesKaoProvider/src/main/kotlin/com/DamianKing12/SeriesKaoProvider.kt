@@ -103,7 +103,7 @@ class SeriesKaoProvider : MainAPI() {
     ): Boolean {
         val doc = app.get(data, headers = headers).document
 
-        // 1. Subtítulos
+        // 1. Subtítulos migrados
         doc.select("track[kind=subtitles]").forEach { track ->
             val src = track.attr("src")
             if (src.isNotBlank()) {
@@ -116,12 +116,12 @@ class SeriesKaoProvider : MainAPI() {
             }
         }
 
-        // 2. Extracción de IFRAMES (Capa de seguridad extra)
+        // 2. Extracción de IFRAMES usando newExtractorLink (MIGRADO)
         doc.select("iframe").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
                 callback(
-                    ExtractorLink(
+                    newExtractorLink(
                         source = "SeriesKao",
                         name = "Enlace Externo",
                         url = src,
@@ -132,7 +132,7 @@ class SeriesKaoProvider : MainAPI() {
             }
         }
 
-        // 3. Extracción de Servidores desde JSON
+        // 3. Extracción de Servidores usando newExtractorLink (MIGRADO)
         val scriptElement = doc.selectFirst("script:containsData(var servers =)")
         if (scriptElement != null) {
             val serversJson = scriptElement.data().substringAfter("var servers = ").substringBefore(";").trim()
@@ -141,13 +141,13 @@ class SeriesKaoProvider : MainAPI() {
                 servers.forEach { server ->
                     val cleanUrl = server.url.replace("\\/", "/")
                     callback(
-                        ExtractorLink(
+                        newExtractorLink(
                             source = server.title,
                             name = server.title,
                             url = cleanUrl,
                             referer = mainUrl,
                             quality = getQuality(server.title),
-                            isM3u8 = cleanUrl.contains(".m3u8")
+                            isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
                         )
                     )
                 }
