@@ -7,7 +7,7 @@ import java.net.URLEncoder
 
 class SeriesKaoProvider : MainAPI() {
 
-    override var mainUrl = "https://serieskao.tv" // Actualizado a .tv
+    override var mainUrl = "https://serieskao.tv"
     override var name = "SeriesKao"
     override var lang = "es"
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
@@ -107,16 +107,27 @@ class SeriesKaoProvider : MainAPI() {
         doc.select("track[kind=subtitles]").forEach { track ->
             val src = track.attr("src")
             if (src.isNotBlank()) {
-                subtitleCallback(newSubtitleFile(track.attr("srclang") ?: "es", src))
+                subtitleCallback(
+                    SubtitleFile(
+                        lang = track.attr("srclang") ?: "es",
+                        url = src
+                    )
+                )
             }
         }
 
-        // 2. Extracción de IFRAMES
+        // 2. Extracción de IFRAMES (Capa de seguridad extra)
         doc.select("iframe").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
                 callback(
-                    newExtractorLink("Enlace Externo", "SeriesKao", src, mainUrl, Qualities.Unknown.value)
+                    ExtractorLink(
+                        source = "SeriesKao",
+                        name = "Enlace Externo",
+                        url = src,
+                        referer = mainUrl,
+                        quality = Qualities.Unknown.value
+                    )
                 )
             }
         }
@@ -130,13 +141,13 @@ class SeriesKaoProvider : MainAPI() {
                 servers.forEach { server ->
                     val cleanUrl = server.url.replace("\\/", "/")
                     callback(
-                        newExtractorLink(
-                            server.title,
-                            server.title,
-                            cleanUrl,
-                            mainUrl,
-                            getQuality(server.title),
-                            cleanUrl.contains(".m3u8")
+                        ExtractorLink(
+                            source = server.title,
+                            name = server.title,
+                            url = cleanUrl,
+                            referer = mainUrl,
+                            quality = getQuality(server.title),
+                            isM3u8 = cleanUrl.contains(".m3u8")
                         )
                     )
                 }
@@ -156,5 +167,8 @@ class SeriesKaoProvider : MainAPI() {
         }
     }
 
-    data class ServerData(val title: String, val url: String)
+    data class ServerData(
+        val title: String, 
+        val url: String
+    )
 }
