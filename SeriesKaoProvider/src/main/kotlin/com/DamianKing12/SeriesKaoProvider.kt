@@ -2,6 +2,7 @@ package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import java.net.URLEncoder
 
 class SeriesKaoProvider : MainAPI() {
@@ -30,12 +31,12 @@ class SeriesKaoProvider : MainAPI() {
             val year = el.selectFirst(".poster-card__year")?.text()?.toIntOrNull()
 
             if (href.contains("/pelicula/", ignoreCase = true)) {
-                newMovieSearchResponse(title, href) {
+                newMovieSearchResponse(title, href, TvType.Movie) {
                     this.posterUrl = poster
                     this.year = year
                 }
             } else {
-                newTvSeriesSearchResponse(title, href) {
+                newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
                     this.posterUrl = poster
                     this.year = year
                 }
@@ -93,7 +94,6 @@ class SeriesKaoProvider : MainAPI() {
         }
     }
 
-    @Suppress("DEPRECATION")
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -102,7 +102,6 @@ class SeriesKaoProvider : MainAPI() {
     ): Boolean {
         val doc = app.get(data, headers = headers).document
 
-        // 1. Subtítulos
         doc.select("track[kind=subtitles]").forEach { track ->
             val src = track.attr("src")
             if (src.isNotBlank()) {
@@ -110,16 +109,15 @@ class SeriesKaoProvider : MainAPI() {
             }
         }
 
-        // 2. Servidores (var servers)
         val scriptElement = doc.selectFirst("script:containsData(var servers =)")
         if (scriptElement != null) {
             val serversJson = scriptElement.data().substringAfter("var servers = ").substringBefore(";").trim()
             try {
-                val servers = AppUtils.parseJson<List<ServerData>>(serversJson)
+                val servers = parseJson<List<ServerData>>(serversJson)
                 servers.forEach { server ->
                     val cleanUrl = server.url.replace("\\/", "/")
                     
-                    // USAMOS EL CONSTRUCTOR DIRECTO PARA EVITAR EL ERROR DE 'VAL'
+                    // CORRECCIÓN: Usamos la nueva sintaxis de ExtractorLink
                     callback(
                         ExtractorLink(
                             source = server.title,
