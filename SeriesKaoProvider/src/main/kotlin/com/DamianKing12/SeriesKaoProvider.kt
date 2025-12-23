@@ -2,7 +2,6 @@ package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.ExtractorLinkType  // ✅ Importación necesaria
 import java.net.URLEncoder
 
 class SeriesKaoProvider : MainAPI() {
@@ -95,7 +94,8 @@ class SeriesKaoProvider : MainAPI() {
         }
     }
 
-    // ✅ SOLUCIÓN FINAL PARA CLOUDSTREAM 4.6.0 - SIN WARNINGS NI ERRORES
+    // 🔥 SOLUCIÓN DEFINITIVA: Constructor con @Suppress (COMPATIBLE CON 4.6.0)
+    @Suppress("DEPRECATION")
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -104,12 +104,12 @@ class SeriesKaoProvider : MainAPI() {
     ): Boolean {
         val doc = app.get(data, headers = headers).document
 
-        // 1️⃣ SUBTÍTULOS - Usa newSubtitleFile
+        // 1️⃣ SUBTÍTULOS
         doc.select("track[kind=subtitles]").forEach { track ->
             val src = track.attr("src")
             if (src.isNotBlank()) {
                 subtitleCallback(
-                    newSubtitleFile(
+                    SubtitleFile(
                         lang = track.attr("srclang") ?: "es",
                         url = src
                     )
@@ -117,46 +117,42 @@ class SeriesKaoProvider : MainAPI() {
             }
         }
 
-        // 2️⃣ IFRAMES - newExtractorLink con TODOS los parámetros
+        // 2️⃣ IFRAMES
         doc.select("iframe").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
                 callback(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = "iframe",
                         name = "iframe",
                         url = src,
                         referer = mainUrl,
                         quality = Qualities.Unknown.value,
-                        type = if (src.contains(".m3u8", ignoreCase = true)) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO,
-                        headers = emptyMap(),
-                        extractorData = null
+                        isM3u8 = false
                     )
                 )
             }
         }
 
-        // 3️⃣ MASTER.TXT - newExtractorLink con TODOS los parámetros
+        // 3️⃣ MASTER.TXT
         val masterScript = doc.select("script").map { it.data() }.firstOrNull { it.contains("master.txt") }
         if (masterScript != null) {
             val masterUrl = Regex("""(https?://[^"'\s]+master\.txt)""").find(masterScript)?.value
             if (masterUrl != null) {
                 callback(
-                    newExtractorLink(
+                    ExtractorLink(
                         source = "HLS",
                         name = "HLS",
                         url = masterUrl,
                         referer = mainUrl,
                         quality = Qualities.Unknown.value,
-                        type = ExtractorLinkType.M3U8,
-                        headers = emptyMap(),
-                        extractorData = null
+                        isM3u8 = true
                     )
                 )
             }
         }
 
-        // 4️⃣ SERVIDORES VAR SERVERS - newExtractorLink con TODOS los parámetros
+        // 4️⃣ SERVIDORES
         val scriptElement = doc.selectFirst("script:containsData(var servers =)")
         if (scriptElement != null) {
             val serversJson = scriptElement.data().substringAfter("var servers = ").substringBefore(";").trim()
@@ -166,15 +162,13 @@ class SeriesKaoProvider : MainAPI() {
                     val cleanUrl = server.url.replace("\\/", "/")
                     val quality = getQuality(server.title)
                     callback(
-                        newExtractorLink(  // ✅ CORREGIDO: typo corregido
+                        ExtractorLink(
                             source = server.title,
                             name = server.title,
                             url = cleanUrl,
                             referer = mainUrl,
                             quality = quality,
-                            type = if (cleanUrl.contains(".m3u8", ignoreCase = true)) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO,
-                            headers = emptyMap(),
-                            extractorData = null
+                            isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
                         )
                     )
                 }
