@@ -94,7 +94,8 @@ class SeriesKaoProvider : MainAPI() {
         }
     }
 
-    // 🔥 CORREGIDO: newExtractorLink() con sintaxis lambda - SIN WARNINGS
+    // 🔥 SOLUCIÓN DEFINITIVA: Constructor directo con @Suppress
+    @Suppress("DEPRECATION")
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -103,12 +104,12 @@ class SeriesKaoProvider : MainAPI() {
     ): Boolean {
         val doc = app.get(data, headers = headers).document
 
-        // 1️⃣ SUBTÍTULOS - Usa newSubtitleFile
+        // 1️⃣ SUBTÍTULOS
         doc.select("track[kind=subtitles]").forEach { track ->
             val src = track.attr("src")
             if (src.isNotBlank()) {
                 subtitleCallback(
-                    newSubtitleFile(
+                    SubtitleFile(
                         lang = track.attr("srclang") ?: "es",
                         url = src
                     )
@@ -116,43 +117,42 @@ class SeriesKaoProvider : MainAPI() {
             }
         }
 
-        // 2️⃣ IFRAMES - newExtractorLink con bloque lambda
+        // 2️⃣ IFRAMES
         doc.select("iframe").forEach { iframe ->
             val src = iframe.attr("src")
             if (src.isNotBlank()) {
                 callback(
-                    newExtractorLink(
+                    ExtractorLink(
+                        source = "iframe",
                         name = "iframe",
                         url = src,
-                        source = "iframe"
-                    ) {
-                        // DENTRO del bloque lambda SÍ puedes modificar
-                        this.referer = mainUrl
-                        this.isM3u8 = false
-                    }
+                        referer = mainUrl,
+                        quality = Qualities.Unknown.value,
+                        isM3u8 = false
+                    )
                 )
             }
         }
 
-        // 3️⃣ MASTER.TXT - newExtractorLink con bloque lambda
+        // 3️⃣ MASTER.TXT
         val masterScript = doc.select("script").map { it.data() }.firstOrNull { it.contains("master.txt") }
         if (masterScript != null) {
             val masterUrl = Regex("""(https?://[^"'\s]+master\.txt)""").find(masterScript)?.value
             if (masterUrl != null) {
                 callback(
-                    newExtractorLink(
+                    ExtractorLink(
+                        source = "HLS",
                         name = "HLS",
                         url = masterUrl,
-                        source = "HLS"
-                    ) {
-                        this.referer = mainUrl
-                        this.isM3u8 = true
-                    }
+                        referer = mainUrl,
+                        quality = Qualities.Unknown.value,
+                        isM3u8 = true
+                    )
                 )
             }
         }
 
-        // 4️⃣ SERVIDORES VAR SERVERS - newExtractorLink con bloque lambda
+        // 4️⃣ SERVIDORES VAR SERVERS
         val scriptElement = doc.selectFirst("script:containsData(var servers =)")
         if (scriptElement != null) {
             val serversJson = scriptElement.data().substringAfter("var servers = ").substringBefore(";").trim()
@@ -160,16 +160,16 @@ class SeriesKaoProvider : MainAPI() {
                 val servers = AppUtils.parseJson<List<ServerData>>(serversJson)
                 servers.forEach { server ->
                     val cleanUrl = server.url.replace("\\/", "/")
+                    val quality = getQuality(server.title)
                     callback(
-                        newExtractorLink(
+                        ExtractorLink(
+                            source = server.title,
                             name = server.title,
                             url = cleanUrl,
-                            source = server.title
-                        ) {
-                            this.quality = getQuality(server.title)
-                            this.referer = mainUrl
-                            this.isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
-                        }
+                            referer = mainUrl,
+                            quality = quality,
+                            isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
+                        )
                     )
                 }
                 servers.isNotEmpty()
