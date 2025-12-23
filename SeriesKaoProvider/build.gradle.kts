@@ -6,9 +6,12 @@ plugins {
 
 android {
     namespace = "com.DamianKing12"
+    // CORRECCIÓN: Añadimos compileSdk que es obligatorio
+    compileSdk = 35
     
     defaultConfig {
         minSdk = 21
+        // Cambiado de targetSdk a la sintaxis correcta para evitar el aviso de 'deprecated'
         targetSdk = 35
     }
     
@@ -20,6 +23,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
@@ -37,7 +44,7 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     
-    // Versión fija para máxima estabilidad
+    // Versión fija y estable
     implementation("com.lagradost:cloudstream3:4.6.0")
     
     implementation(kotlin("stdlib"))
