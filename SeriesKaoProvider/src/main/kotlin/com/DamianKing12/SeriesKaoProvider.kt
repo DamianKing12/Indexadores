@@ -68,7 +68,6 @@ class SeriesKaoProvider : MainAPI() {
         } else {
             val episodes = doc.select("#season-tabs li a[data-tab]").mapNotNull { seasonLink ->
                 val seasonId = seasonLink.attr("data-tab").substringAfter("season-").toIntOrNull() ?: return@mapNotNull null
-
                 val seasonContent = doc.selectFirst("div.tab-content #season-${seasonId}")
 
                 seasonContent?.select("a.episode-item")?.mapNotNull { episodeLink ->
@@ -94,7 +93,7 @@ class SeriesKaoProvider : MainAPI() {
         }
     }
 
-    // ✅ SOLUCIÓN FINAL: newExtractorLink con bloque lambda - SIN WARNINGS
+    @Suppress("DEPRECATION")
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -103,83 +102,40 @@ class SeriesKaoProvider : MainAPI() {
     ): Boolean {
         val doc = app.get(data, headers = headers).document
 
-        // 1️⃣ SUBTÍTULOS
+        // 1. Subtítulos
         doc.select("track[kind=subtitles]").forEach { track ->
             val src = track.attr("src")
             if (src.isNotBlank()) {
-                subtitleCallback(
-                    SubtitleFile(
-                        lang = track.attr("srclang") ?: "es",
-                        url = src
-                    )
-                )
+                subtitleCallback(SubtitleFile(track.attr("srclang") ?: "es", src))
             }
         }
 
-        // 2️⃣ IFRAMES - newExtractorLink con lambda
-        doc.select("iframe").forEach { iframe ->
-            val src = iframe.attr("src")
-            if (src.isNotBlank()) {
-                callback(
-                    newExtractorLink(
-                        source = "iframe",
-                        name = "iframe",
-                        url = src
-                    ) {
-                        this.referer = mainUrl
-                        this.quality = Qualities.Unknown.value
-                    }
-                )
-            }
-        }
-
-        // 3️⃣ MASTER.TXT - newExtractorLink con lambda
-        val masterScript = doc.select("script").map { it.data() }.firstOrNull { it.contains("master.txt") }
-        if (masterScript != null) {
-            val masterUrl = Regex("""(https?://[^"'\s]+master\.txt)""").find(masterScript)?.value
-            if (masterUrl != null) {
-                callback(
-                    newExtractorLink(
-                        source = "HLS",
-                        name = "HLS",
-                        url = masterUrl
-                    ) {
-                        this.referer = mainUrl
-                        this.quality = Qualities.Unknown.value
-                        this.isM3u8 = true
-                    }
-                )
-            }
-        }
-
-        // 4️⃣ SERVIDORES VAR SERVERS - newExtractorLink con lambda
+        // 2. Servidores (var servers)
         val scriptElement = doc.selectFirst("script:containsData(var servers =)")
         if (scriptElement != null) {
             val serversJson = scriptElement.data().substringAfter("var servers = ").substringBefore(";").trim()
-            return try {
+            try {
                 val servers = AppUtils.parseJson<List<ServerData>>(serversJson)
                 servers.forEach { server ->
                     val cleanUrl = server.url.replace("\\/", "/")
-                    val quality = getQuality(server.title)
+                    
+                    // USAMOS EL CONSTRUCTOR DIRECTO PARA EVITAR EL ERROR DE 'VAL'
                     callback(
-                        newExtractorLink(
+                        ExtractorLink(
                             source = server.title,
                             name = server.title,
-                            url = cleanUrl
-                        ) {
-                            this.referer = mainUrl
-                            this.quality = quality
-                            this.isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
-                        }
+                            url = cleanUrl,
+                            referer = mainUrl,
+                            quality = getQuality(server.title),
+                            isM3u8 = cleanUrl.contains(".m3u8", ignoreCase = true)
+                        )
                     )
                 }
-                servers.isNotEmpty()
-            } catch (e: Exception) {
-                false
-            }
+                return servers.isNotEmpty()
+            } catch (e: Exception) { e.printStackTrace() }
         }
 
-        return doc.select("iframe").isNotEmpty() || masterScript != null
+        return false
     }
 
     private fun getQuality(name: String): Int {
