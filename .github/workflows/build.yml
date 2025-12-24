@@ -38,17 +38,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build Plugins
+      - name: Build Provider
         run: |
           chmod +x gradlew
-          # Cambiamos 'make' por 'assembleDebug' para evitar el error de Plugin class
-          ./gradlew :SeriesKaoProvider:assembleDebug makePluginsJson --no-daemon --stacktrace -Dorg.gradle.internal.http.socketTimeout=120000 -Dorg.gradle.internal.http.connectionTimeout=120000
-          
-          # Copiamos los archivos generados. Nota: assembleDebug genera un .aar o .apk
+          ./gradlew :SeriesKaoProvider:assembleDebug --no-daemon --stacktrace \
+            -Dorg.gradle.internal.http.socketTimeout=120000 \
+            -Dorg.gradle.internal.http.connectionTimeout=120000
+
           mkdir -p build-output
           cp SeriesKaoProvider/build/outputs/aar/*.aar build-output/ || true
-          cp SeriesKaoProvider/build/outputs/apk/debug/*.apk build-output/ || true
-          cp build/plugins.json build-output/ || true
+
 
       - name: Push builds
         run: |
