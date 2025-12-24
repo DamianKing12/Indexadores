@@ -31,6 +31,8 @@ android {
 cloudstream {
     description = "Plugin para SeriesKao"
     authors = listOf("DamianKing12")
+    description = "Plugin para SeriesKao"
+    authors = listOf("DamianKing12")
     status = 1
     tvTypes = listOf("TvSeries", "Movie")
     requiresResources = false
