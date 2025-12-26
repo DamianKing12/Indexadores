@@ -1,52 +1,66 @@
 package com.DamianKing12
 
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.amap
 import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
 
 class SeriesKaoProvider : MainAPI() {
-    override var name = "SeriesKao"
+    override var name = "Series Kao Indexador"
     override var mainUrl = "https://serieskao.top"
     override var supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
+    override var lang = "es" // Añadimos el idioma explícitamente
 
-    // El buscador que ya sabemos que funciona
     override suspend fun search(query: String): List<SearchResponse> {
-        val url = "$mainUrl/?s=$query"
+        // Limpiamos la query para evitar errores con espacios
+        val url = "$mainUrl/?s=${query.replace(" ", "+")}"
         val document = app.get(url).document
-        return document.select("div.result-item").mapNotNull {
-            val title = it.selectFirst("div.title a")?.text() ?: return@mapNotNull null
-            val href = it.selectFirst("div.title a")?.attr("href") ?: ""
-            val poster = it.selectFirst("img")?.attr("src")
 
-            newMovieSearchResponse(title, href, TvType.Movie) {
+        return document.select("div.result-item").mapNotNull {
+            val titleElement = it.selectFirst("div.title a")
+            val title = titleElement?.text() ?: return@mapNotNull null
+            val href = titleElement.attr("href")
+
+            // Buscamos el poster en src o data-src por si hay lazy-loading
+            val img = it.selectFirst("img")
+            val poster = img?.attr("data-src")?.ifBlank { img.attr("src") }
+
+            newMovieSearchResponse(title, href, TvType.TvSeries) {
                 this.posterUrl = poster
             }
         }
     }
 
-    // NUEVA ESTRATEGIA: Copiando a Pelispedia
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        // 1. Cargamos la página de la película
         val doc = app.get(data).document
 
-        // 2. Buscamos todos los iframes (donde suelen estar los servidores)
-        // Usamos .apmap para que busque en todos los servidores al mismo tiempo
-        doc.select("iframe").amap {
-            var iframeUrl = it.attr("src")
-
-            // Si el link empieza por // lo arreglamos
-            if (iframeUrl.startsWith("//")) {
-                iframeUrl = "https:$iframeUrl"
+        // Buscamos iframes de video y también enlaces de servidores en botones
+        // Muchos sitios ocultan el link real en un atributo data-url o similares
+        doc.select("iframe, a[href*='embed'], li.dooplay_player_option").amap {
+            var iframeUrl = it.attr("src").ifBlank {
+                it.attr("data-url").ifBlank { it.attr("href") }
             }
 
-            // 3. LA MAGIA: Le pasamos el link al sistema de Cloudstream
-            // loadExtractor intentará reconocer si es Fastream, Voe, Streamwish, etc.
-            loadExtractor(iframeUrl, data, subtitleCallback, callback)
+            if (iframeUrl.isNotEmpty()) {
+                if (iframeUrl.startsWith("//")) {
+                    iframeUrl = "https:$iframeUrl"
+                }
+
+                // Solo intentamos extraer si es un link válido
+                if (iframeUrl.startsWith("http")) {
+                    loadExtractor(iframeUrl, data, subtitleCallback, callback)
+                }
+            }
         }
 
         return true
