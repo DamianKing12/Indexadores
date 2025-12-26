@@ -3,6 +3,6 @@
   "description": "Repositorio de Indexadores",
   "manifestVersion": 1,
   "pluginLists": [
-    "https://raw.githubusercontent.com/DamianKing12/Repositorio-Cloudstream-SeriesKao/builds/plugins.json"
+    "https://raw.githubusercontent.com/DamianKing12/Indexadores/refs/heads/builds/plugins.json"
   ]
 }
