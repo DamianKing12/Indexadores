@@ -1,6 +1,6 @@
 {
-  "name": "SeriesKao Repository",
-  "description": "Repositorio para SeriesKao",
+  "name": "Indexadores",
+  "description": "Repositorio de Indexadores",
   "manifestVersion": 1,
   "pluginLists": [
     "https://raw.githubusercontent.com/DamianKing12/Repositorio-Cloudstream-SeriesKao/builds/plugins.json"
