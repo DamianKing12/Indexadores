@@ -29,6 +29,7 @@ android {
 }
 
 cloudstream {
+    name = "Series Kao Indexador"
     description = "Plugin indexador de SeriesKao"
     authors = listOf("DamianKing12")
     description = "Plugin indexador de SeriesKao"
