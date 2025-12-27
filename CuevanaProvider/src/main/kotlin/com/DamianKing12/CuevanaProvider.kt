@@ -1,8 +1,10 @@
 package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin // Importante para la etiqueta
 import org.jsoup.nodes.Element
 
+@CloudstreamPlugin
 class CuevanaProvider : MainAPI() {
     override var mainUrl = "https://cue.cuevana3.nu"
     override var name = "Cuevana 3 Indexador"
@@ -13,6 +15,7 @@ class CuevanaProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
+        // Selector para los artículos de búsqueda en Cuevana
         return document.select("ul.results-post article, div.result-item").mapNotNull {
             it.toSearchResult()
         }
