@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 rootProject.name = "CloudstreamPlugins"
 include(":SeriesKaoProvider")
 include(":CuevanaProvider")
+//hola
