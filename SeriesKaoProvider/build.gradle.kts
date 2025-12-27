@@ -30,13 +30,9 @@ android {
 }
 
 cloudstream {
-    // Añadimos versión para quitar el error de 'unspecified'
-    version = 1
     authors = listOf("DamianKing12")
-    description = "Plugin indexador para SeriesKao"
-    requiresResources = true
+    description = "Plugin Indexador"
     language = "es"
-    iconUrl = "https://www.google.com/s2/favicons?domain=serieskao.tv&sz=%size%"
 }
 
 dependencies {

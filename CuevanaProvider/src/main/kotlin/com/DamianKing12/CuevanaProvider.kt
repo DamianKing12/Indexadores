@@ -2,6 +2,8 @@ package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
 import org.jsoup.nodes.Element
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin // IMPORTANTE
+@CloudstreamPlugin
 
 class CuevanaProvider : MainAPI() {
     override var name = "Cuevana 3"

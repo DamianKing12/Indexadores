@@ -2,6 +2,8 @@ package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin // IMPORTANTE
+@CloudstreamPlugin
 
 class SeriesKaoProvider : MainAPI() {
     override var name = "SeriesKao"
