@@ -38,16 +38,19 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build Provider
+      - name: Build All Providers
         run: |
           chmod +x gradlew
-          ./gradlew :SeriesKaoProvider:assembleDebug --no-daemon --stacktrace \
+          # Ejecutamos 'make' para que el plugin de Cloudstream genere los archivos .cs3
+          ./gradlew make --no-daemon --stacktrace \
             -Dorg.gradle.internal.http.socketTimeout=120000 \
             -Dorg.gradle.internal.http.connectionTimeout=120000
 
+          # Creamos la carpeta de salida si no existe
           mkdir -p build-output
-          cp SeriesKaoProvider/build/outputs/aar/*.aar build-output/ || true
-
+          
+          # Buscamos TODOS los archivos .cs3 en cualquier carpeta de build y los movemos a la salida
+          find . -name "*.cs3" -exec cp {} build-output/ \;
 
       - name: Push builds
         run: |
@@ -55,5 +58,5 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add .
-          git commit -m "Build $GITHUB_SHA" || exit 0
+          git commit -m "Build $GITHUB_SHA - Multi-Provider" || exit 0
           git push origin builds --force
