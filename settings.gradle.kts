@@ -19,4 +19,5 @@ dependencyResolutionManagement {
 rootProject.name = "CloudstreamPlugins"
 include(":SeriesKaoProvider")
 include(":CuevanaProvider")
-//que hay?
+//que hay
+// ojito
