@@ -29,13 +29,11 @@ android {
 }
 
 cloudstream {
-    description = "Plugin indexador de SeriesKao"
     authors = listOf("DamianKing12")
-    status = 1
-    tvTypes = listOf("TvSeries", "Movie")
-    requiresResources = false
+    description = "Plugins indexadores de búsqueda (SeriesKao, Cuevana, etc)"
+    requiresResources = true
     language = "es"
-    iconUrl = "https://www.google.com/s2/favicons?domain=serieskao.top&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=serieskao.tv&sz=%size%"
 }
 
 dependencies {
