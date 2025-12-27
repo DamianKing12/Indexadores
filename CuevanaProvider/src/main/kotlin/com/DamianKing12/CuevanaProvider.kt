@@ -1,7 +1,6 @@
 package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
 class CuevanaProvider : MainAPI() {
@@ -14,7 +13,6 @@ class CuevanaProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
-        // Selector para los artículos de búsqueda en Cuevana
         return document.select("ul.results-post article, div.result-item").mapNotNull {
             it.toSearchResult()
         }
@@ -62,7 +60,6 @@ class CuevanaProvider : MainAPI() {
                 this.plot = plot
             }
         } else {
-            // ESTE ES EL ELSE QUE FALTABA
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.plot = plot
