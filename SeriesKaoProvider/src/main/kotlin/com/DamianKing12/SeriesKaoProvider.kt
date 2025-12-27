@@ -1,9 +1,12 @@
 package com.DamianKing12
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.plugins.CloudstreamPlugin // <--- IMPORTANTE
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
+import org.jsoup.nodes.Element
 
+@CloudstreamPlugin // <--- ESTA ES LA ETIQUETA QUE FALTABA
 class SeriesKaoProvider : MainAPI() {
     override var name = "Series Kao Indexador"
     override var mainUrl = "https://serieskao.top"

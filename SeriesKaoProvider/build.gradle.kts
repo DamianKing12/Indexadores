@@ -5,14 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "com.DamianKing12"
+    // Cambiado a .serieskao para que no choque con el de cuevana
+    namespace = "com.DamianKing12.serieskao"
     compileSdk = 35
-    
+
     defaultConfig {
         minSdk = 21
         targetSdk = 35
     }
-    
+
     buildFeatures {
         buildConfig = true
         viewBinding = false
@@ -29,23 +30,22 @@ android {
 }
 
 cloudstream {
+    // Añadimos versión para quitar el error de 'unspecified'
+    version = 1
     authors = listOf("DamianKing12")
-    description = "Plugins indexadores de búsqueda (SeriesKao, Cuevana, etc)"
+    description = "Plugin indexador para SeriesKao"
     requiresResources = true
     language = "es"
     iconUrl = "https://www.google.com/s2/favicons?domain=serieskao.tv&sz=%size%"
 }
 
-
-
-
 dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
-    
-    // Cambiamos a master-SNAPSHOT que suele estar más disponible en el caché de JitPack
+
+    // Usamos la misma que en Cuevana para consistencia
     implementation("com.github.recloudstream:cloudstream:master-SNAPSHOT")
-    
+
     implementation(kotlin("stdlib"))
     implementation("com.github.Blatzar:NiceHttp:0.4.11")
     implementation("org.jsoup:jsoup:1.18.3")
