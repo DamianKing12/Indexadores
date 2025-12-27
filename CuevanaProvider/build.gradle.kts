@@ -32,7 +32,7 @@ android {
 cloudstream {
     authors = listOf("DamianKing12")
     description = "Plugins indexadores de búsqueda (SeriesKao, Cuevana, etc)"
-    requiresResources = false
+    requiresResources = true
     language = "es"
     iconUrl = "https://www.google.com/s2/favicons?domain=cuevana3.nu&sz=%size%"
 }
