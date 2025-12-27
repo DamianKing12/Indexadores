@@ -1,27 +1,53 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
+plugins {
+    id("com.android.library")
+    id("kotlin-android")
+    id("com.lagradost.cloudstream3.gradle")
+}
+
+android {
+    namespace = "com.DamianKing12"
+    compileSdk = 35
+    
+    defaultConfig {
+        minSdk = 21
+        targetSdk = 35
+    }
+    
+    buildFeatures {
+        buildConfig = true
+        viewBinding = false
     }
 
-    // Esta es la corrección clave para saltar el error de jadb:master-SNAPSHOT
-    configurations.all {
-        resolutionStrategy {
-            force("com.github.vidstige:jadb:1.2.1")
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.7.3")
-        classpath("com.github.recloudstream:gradle:cce1b8d84d")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
-// Eliminamos el bloque allprojects para limpiar los errores de configuración
-// Los repositorios ya se manejan correctamente en settings.gradle.kts
+cloudstream {
+    authors = listOf("DamianKing12")
+    description = "Plugins indexadores de búsqueda (SeriesKao, Cuevana, etc)"
+    requiresResources = true
+    language = "es"
+    iconUrl = "https://www.google.com/s2/favicons?domain=serieskao.tv&sz=%size%"
+}
 
-task("clean", Delete::class) {
-    delete(layout.buildDirectory)
+
+
+
+dependencies {
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    
+    // Cambiamos a master-SNAPSHOT que suele estar más disponible en el caché de JitPack
+    implementation("com.github.recloudstream:cloudstream:master-SNAPSHOT")
+    
+    implementation(kotlin("stdlib"))
+    implementation("com.github.Blatzar:NiceHttp:0.4.11")
+    implementation("org.jsoup:jsoup:1.18.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
 }
