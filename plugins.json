@@ -2,7 +2,7 @@
   {
     "iconUrl": "https://www.google.com/s2/favicons?domain=serieskao.top&sz=%size%",
     "apiVersion": 1,
-    "repositoryUrl": "https://github.com/DamianKing12/Repositorio-Cloudstream-SeriesKao",
+    "repositoryUrl": "https://github.com/DamianKing12/Indexadores",
     "fileSize": 13633,
     "status": 1,
     "language": "es",
@@ -15,15 +15,14 @@
     ],
     "version": 1,
     "internalName": "SeriesKaoProvider",
-    "description": "Plugin para SeriesKao",
-    "url": "https://github.com/DamianKing12/Indexadores/raw/refs/heads/builds/SeriesKaoProvider.cs3",
+    "url": "https://raw.githubusercontent.com/DamianKing12/Indexadores/builds/SeriesKaoProvider.cs3",
     "name": "SeriesKaoProvider"
   },
   {
     "iconUrl": "https://www.google.com/s2/favicons?domain=cuevana3.nu&sz=%size%",
     "apiVersion": 1,
     "repositoryUrl": "https://github.com/DamianKing12/Indexadores",
-    "fileSize": 0,
+    "fileSize": 15027,
     "status": 1,
     "language": "es",
     "authors": [
@@ -35,8 +34,7 @@
     ],
     "version": 1,
     "internalName": "CuevanaProvider",
-    "description": "Plugin para Cuevana",
-    "url": "https://github.com/DamianKing12/Indexadores/raw/refs/heads/builds/CuevanaProvider.cs3",
+    "url": "https://raw.githubusercontent.com/DamianKing12/Indexadores/builds/CuevanaProvider.cs3",
     "name": "CuevanaProvider"
   }
 ]
